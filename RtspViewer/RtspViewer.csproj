@@ -103,12 +103,6 @@
 	<PropertyGroup Condition="'$(Platform)' == 'x64'">
 		<DefineConstants>X64PLATFORM</DefineConstants>
 	</PropertyGroup>
-	<!--<Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="if $(Platform) == x86">
-	  <Exec Command="echo 'asdasdasasdasdasd'&#xD;&#xA;xcopy $(ProjectDir)\x86\*.dll  $(TargetDir)  /Y /E /C /F&#xD;&#xA;			xcopy $(ProjectDir)..\libffmpeghelper\x86\$(Configuration)\libffmpeghelper.dll  $(TargetDir)  /Y /E /C /F" />
-	</Target>
-	<Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(Platform)' == 'x64'">
-	  <Exec Command="echo 'asdasdasasdasdasd'&#xD;&#xA;echo $(ProjectDir)&#xD;&#xA; xcopy $(ProjectDir)\x64\*.dll  $(TargetDir)  /Y /E /C /F&#xD;&#xA;			xcopy $(ProjectDir)..\libffmpeghelper\x64\$(Configuration)\libffmpeghelper.dll  $(TargetDir)  /Y /E /C /F&#xD;&#xA;" />
-	</Target>-->
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
 		<Exec Command="if $(Platform) == x64 (xcopy $(ProjectDir)\x64\*.dll  $(TargetDir)  /Y /E /C /F)&#xD;&#xA; if $(Platform) == x86 (xcopy $(ProjectDir)\x86\*.dll  $(TargetDir)  /Y /E /C /F)&#xD;&#xA;" />
 	</Target>
