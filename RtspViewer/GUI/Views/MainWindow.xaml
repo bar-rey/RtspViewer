@@ -1,0 +1,95 @@
+﻿<Window x:Class="RtspViewer.GUI.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:gui="clr-namespace:RtspViewer.GUI"
+        xmlns:views="clr-namespace:RtspViewer.GUI.Views"
+        xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+        xmlns:materialIcons="clr-namespace:Material.Icons.WPF;assembly=Material.Icons.WPF"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        mc:Ignorable="d"
+        Loaded="Window_Loaded"
+        Title="{Binding Title}"
+        Style="{StaticResource {x:Type Window}}"
+        MinWidth="800px" MinHeight="600px"
+        Width="800px" Height="600px"
+        WindowStartupLocation="CenterScreen">
+    <i:Interaction.Triggers>
+        <i:EventTrigger EventName="Closing">
+            <i:InvokeCommandAction Command="{Binding ClosingCommand}" />
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
+    <DockPanel>
+        <Menu DockPanel.Dock="Top">
+            <Menu.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <DockPanel HorizontalAlignment="Stretch"/>
+                </ItemsPanelTemplate>
+            </Menu.ItemsPanel>
+            <MenuItem Header="Файл">
+                <MenuItem Header="Данные">
+                    <MenuItem Header="Импорт источников">
+                        <MenuItem Command="{Binding CreateImportSourcesTemplateCommand}" Header="Создать шаблон"/>
+                        <MenuItem Command="{Binding ImportSourcesCommand}" Header="Импорт"/>
+                    </MenuItem>
+                    <MenuItem Command="{Binding ExportReportsCommand}" Header="Экспорт оценок"/>
+                </MenuItem>
+                <MenuItem Header="Плеер">
+                    <MenuItem Command="{Binding StopVideoCommand}" Header="Выключить"/>
+                    <MenuItem Command="{Binding RestartVideoCommand}" Header="Перезапустить"/>
+                </MenuItem>
+                <Separator />
+                <MenuItem Header="Выйти" x:Name="ExitOption" Click="ExitOption_Click"/>
+            </MenuItem>
+            <MenuItem Header="Вид" >
+                <MenuItem Header="Полный экран" x:Name="FullScreenOption" IsChecked="False" IsCheckable="True" Checked="FullScreenOption_Checked" Unchecked="FullScreenOption_Unchecked"/>
+                <MenuItem Header="Строка состояния" x:Name="StatusBarOption" IsChecked="True" IsCheckable="True" Unchecked="StatusBarOption_Unchecked"/>
+            </MenuItem>
+            <MenuItem Header="{materialIcons:MaterialIconExt Kind=Cog, Size=24}" HorizontalAlignment="Right">
+                <MenuItem Header="Передача данных по TCP" IsChecked="{Binding IsTcpConnection, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, NotifyOnSourceUpdated=True}"
+                          Command="{Binding ChangeTcpConnectionStateCommand}" IsCheckable="True"/>
+            </MenuItem>
+        </Menu>
+        <StatusBar DockPanel.Dock="Bottom" x:Name="WindowStatusBar" Background="{StaticResource MaterialDesignCardBackground}">
+            <TextBlock Margin="2" Text="{Binding Status}" Foreground="{StaticResource MaterialDesignDarkForeground}"/>
+        </StatusBar>
+        <DockPanel Margin="0 4">
+            <Grid DockPanel.Dock="Left" Margin="0 0 2 0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <ListBox Grid.Row="1" DisplayMemberPath="Name" ItemsSource="{Binding Sources}"
+                     SelectedItem="{Binding SelectedSource, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, NotifyOnSourceUpdated=True}">
+
+                </ListBox>
+                <StackPanel Grid.Row="0" Orientation="Horizontal">
+                    <Button Content="{materialIcons:MaterialIconExt Kind=PlusBox}" Command="{Binding AddSourceCommand}" Margin="1 0" ToolTip="Добавление"/>
+                    <Button Content="{materialIcons:MaterialIconExt Kind=Edit}" Command="{Binding EditSourceCommand}" Margin="1 0" ToolTip="Редактирование"/>
+                    <Button Content="{materialIcons:MaterialIconExt Kind=Delete}" Command="{Binding RemoveSourceCommand}" Margin="1 0" ToolTip="Удаление"/>
+                </StackPanel>
+            </Grid>
+            <Grid Margin="2 0 0 0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <views:VideoView Grid.Row="0" VideoSource="{Binding VideoSource}" />
+                <Grid Grid.Row="1" Margin="0 0 0 2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="2*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                </Grid>
+                <UniformGrid Rows="1" Grid.Row="2" Margin="0 2 0 0">
+                    <Button Content="{materialIcons:MaterialIconExt Kind=ThumbUp}" Command="{Binding PositiveReportCommand}" ToolTip="Хорошо"/>
+                    <Button Content="{materialIcons:MaterialIconExt Kind=EmojiNeutral}" Margin="2 0 2 0" Command="{Binding EmptyReportCommand}" ToolTip="Не знаю"/>
+                    <Button Content="{materialIcons:MaterialIconExt Kind=ThumbDown}" Command="{Binding NegativeReportCommand}" ToolTip="Плохо"/>
+                </UniformGrid>
+            </Grid>
+        </DockPanel>
+    </DockPanel>
+</Window>
