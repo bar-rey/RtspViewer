@@ -23,16 +23,16 @@ namespace RtspViewer.GUI.ViewModels
         private const string HttpPrefix = "http://";
 
         private readonly DatabaseContext _db;
-        private ObservableCollection<Source> _sources = null!;
         private readonly ISourceDialogService _sourceDialogService;
         private readonly IFileDialogService _fileDialogService;
         private readonly IFolderDialogService _folderDialogService;
         private readonly ICsvService<Source> _sourceCsvService;
         private readonly ICsvService<Report> _reportCsvService;
+        private readonly IRtspConnection _rtspConnection;
+        private ObservableCollection<Source> _sources = null!;
+        private Source? _selectedSource;
         private string _title = "Прямой эфир";
         private string _status = string.Empty;
-        private readonly IRtspConnection _rtspConnection;
-        public Source? _selectedSource;
 
         public ObservableCollection<Source> Sources
         {
@@ -63,7 +63,6 @@ namespace RtspViewer.GUI.ViewModels
             get => Settings.Default.UseTcp;
             set
             {
-                //Set(ref _isTcpConnection, value);
                 Settings.Default.UseTcp = value;
                 Settings.Default.Save();
                 OnPropertyChanged();
@@ -104,22 +103,17 @@ namespace RtspViewer.GUI.ViewModels
             Sources = _db.Sources.Local.ToObservableCollection();
 
             ClosingCommand = new RelayCommand(_ => OnClosing());
-
             AddSourceCommand = new RelayCommand(async _ => await OnAddSourceButtonClick());
             EditSourceCommand = new RelayCommand(async _ => await OnEditSourceButtonClick(), _ => SelectedSource != null);
             RemoveSourceCommand = new RelayCommand(async _ => await OnRemoveSourceButtonClick(), _ => SelectedSource != null);
-
             PositiveReportCommand = new RelayCommand(async _ => await OnReportButtonClick(true), _ => SelectedSource != null);
             EmptyReportCommand = new RelayCommand(async _ => await OnReportButtonClick(null), _ => SelectedSource != null);
             NegativeReportCommand = new RelayCommand(async _ => await OnReportButtonClick(false), _ => SelectedSource != null);
-
             ImportSourcesCommand = new RelayCommand(async _ => await OnImportSourcesButtonClick());
             CreateImportSourcesTemplateCommand = new RelayCommand(async _ => await OnCreateImportSourcesTemplateButtonClick());
             ExportReportsCommand = new RelayCommand(async _ => await OnExportReportsButtonClick(), _ => _db.Reports.Any());
-
             StopVideoCommand = new RelayCommand(_ => StopStream(), _ => SelectedSource != null);
             RestartVideoCommand = new RelayCommand(async _ => await TryRestartStream(), _ => SelectedSource != null);
-
             ChangeTcpConnectionStateCommand = new RelayCommand(_ => IsTcpConnection = !IsTcpConnection);
         }
 
@@ -178,6 +172,7 @@ namespace RtspViewer.GUI.ViewModels
 
         private async Task OnAddSourceButtonClick()
         {
+            SelectedSource = null;
             if (!_sourceDialogService.ModifySourceDialog(new Source())) return;
             if (!await ValidateStreamSource(_sourceDialogService.ModifiedSource!.Address,
                 _sourceDialogService.ModifiedSource.Login,
@@ -198,6 +193,7 @@ namespace RtspViewer.GUI.ViewModels
 
         private async Task OnEditSourceButtonClick()
         {
+            StopStream();
             if (!_sourceDialogService.ModifySourceDialog(new Source()
             {
                 Name = SelectedSource!.Name,
@@ -245,6 +241,7 @@ namespace RtspViewer.GUI.ViewModels
 
         public async Task OnImportSourcesButtonClick()
         {
+            SelectedSource = null;
             if (!_fileDialogService.SelectFileDialog("csv")) return;
             System.Collections.Generic.IEnumerable<Source> sources;
             try
@@ -260,7 +257,6 @@ namespace RtspViewer.GUI.ViewModels
             if (!sources.Any()) return;
             if (_db.Sources.Local.Any() && _fileDialogService.ShowConfirmationMessage("Удалить уже добавленные источники?"))
             {
-                SelectedSource = null;
                 _db.RemoveRange(_db.Reports);
                 _db.RemoveRange(_db.Sources.Local);
                 await _db.SaveChangesAsync();
