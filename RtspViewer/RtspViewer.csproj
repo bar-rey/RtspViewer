@@ -13,6 +13,7 @@
 		<Platforms>AnyCPU;x64</Platforms>
 		<UseWindowsForms>True</UseWindowsForms>
 		<ApplicationIcon>Resources\icon.ico</ApplicationIcon>
+		<StartupObject>RtspViewer.App</StartupObject>
 	</PropertyGroup>
 	<ItemGroup>
 		<None Remove="x64\avcodec-58.dll" />
@@ -96,13 +97,6 @@
 			<LastGenOutput>Settings.Designer.cs</LastGenOutput>
 		</None>
 	</ItemGroup>
-
-	<PropertyGroup Condition="'$(Platform)' == 'x86'">
-		<DefineConstants>X86PLATFORM</DefineConstants>
-	</PropertyGroup>
-	<PropertyGroup Condition="'$(Platform)' == 'x64'">
-		<DefineConstants>X64PLATFORM</DefineConstants>
-	</PropertyGroup>
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
 		<Exec Command="if $(Platform) == x64 (xcopy $(ProjectDir)\x64\*.dll  $(TargetDir)  /Y /E /C /F)&#xD;&#xA; if $(Platform) == x86 (xcopy $(ProjectDir)\x86\*.dll  $(TargetDir)  /Y /E /C /F)&#xD;&#xA;" />
 	</Target>

@@ -154,13 +154,6 @@ namespace RtspViewer.GUI.ViewModels
             _rtspConnection.StatusChanged += MainWindowModelOnStatusChanged;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="address"></param>
-        /// <param name="login"></param>
-        /// <param name="password"></param>
-        /// <returns></returns>
         private async Task<bool> ValidateStreamSource(string address, string? login, string? password)
         {
             if (!address.StartsWith(RtspPrefix) && !address.StartsWith(HttpPrefix))
@@ -183,48 +176,6 @@ namespace RtspViewer.GUI.ViewModels
             return true;
         }
 
-        //private void OnStartButtonClick()
-        //{
-        //    string address = DeviceAddress;
-
-        //    if (!address.StartsWith(RtspPrefix) && !address.StartsWith(HttpPrefix))
-        //        address = RtspPrefix + address;
-
-        //    if (!Uri.TryCreate(address, UriKind.Absolute, out Uri? deviceUri))
-        //    {
-        //        MessageBox.Show("Invalid device address", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-        //        return;
-        //    }
-
-        //    var credential = new NetworkCredential(Login, Password);
-
-        //    var connectionParameters = !string.IsNullOrEmpty(deviceUri.UserInfo) ? new ConnectionParameters(deviceUri) : 
-        //        new ConnectionParameters(deviceUri, credential);
-
-
-        //    connectionParameters.RtpTransport = RtpTransportProtocol.UDP;
-        //    connectionParameters.CancelTimeout = TimeSpan.FromSeconds(1);
-
-        //    _rtspConnection.Start(connectionParameters);
-        //    _rtspConnection.StatusChanged += MainWindowModelOnStatusChanged;
-
-        //    _startButtonEnabled = false;
-        //    //StartClickCommand.RaiseCanExecuteChanged();
-        //    _stopButtonEnabled = true;
-        //    //StopClickCommand.RaiseCanExecuteChanged();
-        //}
-
-        //private void OnStopButtonClick()
-        //{
-        //    //_rtspConnection.Stop();
-        //    //_rtspConnection.StatusChanged -= MainWindowModelOnStatusChanged;
-        //    //_stopButtonEnabled = false;
-        //    ////StopClickCommand.RaiseCanExecuteChanged();
-        //    //_startButtonEnabled = true;
-        //    ////StartClickCommand.RaiseCanExecuteChanged();
-        //    //Status = string.Empty;
-        //}
-
         private async Task OnAddSourceButtonClick()
         {
             if (!_sourceDialogService.ModifySourceDialog(new Source())) return;
@@ -232,7 +183,7 @@ namespace RtspViewer.GUI.ViewModels
                 _sourceDialogService.ModifiedSource.Login,
                 _sourceDialogService.ModifiedSource.Password))
             {
-                _sourceDialogService.ShowErrorMessage("Не удалось установить по указанным данным\nИнформация не была сохранена");
+                _sourceDialogService.ShowErrorMessage("Не удалось установить соединение по указанным данным\nИнформация не была сохранена");
                 return;
             }
             _db.Sources.Add(new Source()
@@ -259,7 +210,7 @@ namespace RtspViewer.GUI.ViewModels
                 _sourceDialogService.ModifiedSource.Login,
                 _sourceDialogService.ModifiedSource.Password))
             {
-                _sourceDialogService.ShowErrorMessage("Не удалось установить по указанным данным\nИнформация не была сохранена");
+                _sourceDialogService.ShowErrorMessage("Не удалось установить соединение по указанным данным\nИнформация не была сохранена");
                 return;
             }
             SelectedSource.Name = _sourceDialogService.ModifiedSource!.Name;
@@ -272,6 +223,7 @@ namespace RtspViewer.GUI.ViewModels
 
         private async Task OnRemoveSourceButtonClick()
         {
+            StopStream();
             if (!_sourceDialogService.ShowConfirmationMessage("Удалить выбранный источник?")) return;
             _db.Reports.RemoveRange(_db.Reports.Where(r => r.SourceId == SelectedSource!.Id));
             _db.Sources.Remove(SelectedSource!);
