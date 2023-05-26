@@ -55,7 +55,7 @@ namespace RtspViewer.GUI.ViewModels
             set
             {
                 Set(ref _selectedSource, value);
-                Application.Current.Dispatcher.InvokeAsync(() => TryRestartStream());
+                Application.Current.Dispatcher.InvokeAsync(async () => await TryRestartStream());
             }
         }
         public bool IsTcpConnection
@@ -66,7 +66,7 @@ namespace RtspViewer.GUI.ViewModels
                 Settings.Default.UseTcp = value;
                 Settings.Default.Save();
                 OnPropertyChanged();
-                Application.Current.Dispatcher.InvokeAsync(() => TryRestartStream());
+                Application.Current.Dispatcher.InvokeAsync(async () => await TryRestartStream());
             }
         }
         private RtpTransportProtocol _rtpTransportProtocol => IsTcpConnection ? RtpTransportProtocol.TCP : RtpTransportProtocol.UDP;
@@ -127,7 +127,6 @@ namespace RtspViewer.GUI.ViewModels
         private async Task TryRestartStream()
         {
             StopStream();
-
             if (_selectedSource == null) return;
             if (!await ValidateStreamSource(_selectedSource.Address, _selectedSource.Login, _selectedSource.Password)) 
             {
@@ -150,28 +149,24 @@ namespace RtspViewer.GUI.ViewModels
 
         private async Task<bool> ValidateStreamSource(string address, string? login, string? password)
         {
-            if (!address.StartsWith(RtspPrefix) && !address.StartsWith(HttpPrefix))
-                address = RtspPrefix + address;
-
-            if (!Uri.TryCreate(address, UriKind.Absolute, out Uri? deviceUri))
-                return false;
-
+            if (!address.StartsWith(RtspPrefix) && !address.StartsWith(HttpPrefix)) address = RtspPrefix + address;
+            if (!Uri.TryCreate(address, UriKind.Absolute, out Uri? deviceUri)) return false;
             var credential = new NetworkCredential(login, password);
-            var connectionParameters = !string.IsNullOrEmpty(deviceUri.UserInfo) ? new ConnectionParameters(deviceUri) :
-                new ConnectionParameters(deviceUri, credential);
+            var connectionParameters = !string.IsNullOrEmpty(deviceUri.UserInfo)
+                ? new ConnectionParameters(deviceUri)
+                : new ConnectionParameters(deviceUri, credential);
             var cancellationTokenSource = new CancellationTokenSource();
-
             using (RtspClient rtspClient = new RtspClient(connectionParameters))
             {
                 try { await rtspClient.ConnectAsync(cancellationTokenSource.Token); }
                 catch { cancellationTokenSource.Cancel(); return false; }
             }
-
             return true;
         }
 
         private async Task OnAddSourceButtonClick()
         {
+            StopStream();
             SelectedSource = null;
             if (!_sourceDialogService.ModifySourceDialog(new Source())) return;
             if (!await ValidateStreamSource(_sourceDialogService.ModifiedSource!.Address,
@@ -241,6 +236,7 @@ namespace RtspViewer.GUI.ViewModels
 
         public async Task OnImportSourcesButtonClick()
         {
+            StopStream();
             SelectedSource = null;
             if (!_fileDialogService.SelectFileDialog("csv")) return;
             System.Collections.Generic.IEnumerable<Source> sources;
