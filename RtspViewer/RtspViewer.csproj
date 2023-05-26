@@ -99,6 +99,6 @@
 		</None>
 	</ItemGroup>
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
-		<Exec Command="if $(Platform) == x64 (xcopy $(ProjectDir)\x64\*.dll  $(TargetDir)  /Y /E /C /F) else (xcopy $(ProjectDir)\x86\*.dll  $(TargetDir)  /Y /E /C /F)&#xD;&#xA;" />
+		<Exec Command="if $(Platform) == x64 (xcopy $(ProjectDir)\x64\*.dll  $(TargetDir)  /Y /E /C /F)&#xD;&#xA; if $(Platform) == x86 (xcopy $(ProjectDir)\x86\*.dll  $(TargetDir)  /Y /E /C /F)&#xD;&#xA;" />
 	</Target>
 </Project>
